@@ -1,0 +1,61 @@
+--- pluggable.php.dist	2013-08-08 03:52:31.608790732 +0000
++++ pluggable.php	2013-08-08 05:33:46.436989139 +0000
+@@ -6,6 +6,8 @@
+  * @package WordPress
+  */
+ 
++define(PADLEN, '6');
++
+ if ( !function_exists('wp_set_current_user') ) :
+ /**
+  * Changes the current user by ID or name.
+@@ -1252,6 +1254,27 @@
+  * @return bool Whether the nonce check passed or failed.
+  */
+ function wp_verify_nonce($nonce, $action = -1) {
++
++	/* This segment of code reverses the functionality added 
++	* to wp_create_nonce
++	hex2bin no longer exists... WTF????? 
++	*/
++
++	$padstr = substr($nonce, 0, PADLEN);
++	$nonce = substr($nonce, PADLEN);
++	//error_log( "Read nonce was " . $nonce);
++	$nonce = pack("H*", $nonce); 
++	
++	//error_log(" Decoded that nonce to " . $nonce); 
++
++        for($i=0;$i<strlen($nonce);$i++)
++        {
++                $nonce{$i} = $nonce{$i} ^ $padstr{$i%PADLEN};
++        }
++
++
++	//error_log("Decrypted nonce was " . $nonce); 
++
+ 	$user = wp_get_current_user();
+ 	$uid = (int) $user->ID;
+ 	if ( ! $uid )
+@@ -1287,7 +1310,20 @@
+ 
+ 	$i = wp_nonce_tick();
+ 
+-	return substr(wp_hash($i . $action . $uid, 'nonce'), -12, 10);
++	$padstr = substr(wp_hash(time(), 'nonce'), 0, PADLEN);
++
++	$thenonce = substr(wp_hash($i . $action . $uid, 'nonce'), -12, 10);
++	//error_log("Created a nonce " . $thenonce);
++
++	for($i=0;$i<strlen($thenonce);$i++)
++	{
++		$thenonce{$i} = $thenonce{$i} ^ $padstr{$i%PADLEN};
++ 	}
++	
++	//error_log("Encrypted that to nonce " . $thenonce);
++	$retstr = $padstr . bin2hex($thenonce);
++	//error_log("Encoded that to nonce " . $retstr);
++	return $retstr;
+ }
+ endif;
+ 
