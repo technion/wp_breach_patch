@@ -1,7 +1,7 @@
 wp_breach_patch
 ===============
 
-A patch to Wordpress that mitigates the BREACH vulnerability.
+A plugin for Wordpress that mitigates the BREACH vulnerability.
 
 Technical
 ---------
@@ -11,5 +11,7 @@ CSRF = OTP || (CSRF ^ OTP)
 
 Installation
 ------------
-Apply as a patch. Has been developed for Wordpress 3.6. Welcome feedback on how it runs with other version.
+There is no configuration associated with this plugin.
+Simply copy it to your plugins directory as per typical plugin installation process, then activate it.
+You will need to logout of Wordpress and back in to ensure all tokens are regenerated.
 
